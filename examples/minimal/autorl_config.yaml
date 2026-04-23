@@ -1,0 +1,47 @@
+# Minimal autorl config — local backend, perturbation search
+# Good starting point for testing on a single machine.
+
+experiment:
+  name: minimal_example
+  exp_name_prefix: exp
+  log_dir: logs
+  results_tsv: results.tsv
+  baseline: 0.80
+  noise_floor: 0.005
+
+parameters:
+  learning_rate:
+    default: 1.0e-4
+    type: float
+    range: [1.0e-6, 1.0e-2]
+  batch_size:
+    default: 128
+    type: int
+    range: [32, 512]
+  entropy_coef:
+    default: 0.01
+    type: float
+    range: [0.0001, 0.1]
+
+backend:
+  type: local
+  train_template: train_template.sh
+  gen_dir: generated
+  run_parallel: false     # set true to run experiments in parallel
+
+search:
+  strategy: perturbation
+  experiments_per_round: 3
+  perturb_pct: 0.3
+  max_rounds: 10
+
+log_parser:
+  type: verl
+
+poll_interval: 30
+
+initial_experiments:
+  include_baseline: true
+  sweeps:
+    learning_rate: [5.0e-5, 5.0e-4]
+    batch_size: [64, 256]

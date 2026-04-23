@@ -1,0 +1,71 @@
+# autorl_config.yaml — Example for verl + CloudML
+# Copy this to your project root and customize.
+
+experiment:
+  name: my_rl_experiment
+  exp_name_prefix: dapo_v9_tts_exp   # prefix for experiment names
+  log_dir: autoresearch/logs          # where training logs are written
+  results_tsv: autoresearch/results.tsv
+  baseline: 0.9411                    # baseline accuracy to beat
+  noise_floor: 0.001                  # minimum improvement to count as "candidate"
+
+parameters:
+  # Training hyperparameters
+  actor_lr:
+    default: 5.0e-5
+    type: float
+    range: [1.0e-6, 1.0e-3]
+  ppo_epochs:
+    default: 4
+    type: int
+    range: [1, 8]
+  entropy_coef:
+    default: 0.01
+    type: float
+    range: [0.0001, 0.1]
+
+  # Reward function weights (optional — add more as needed)
+  bc_severity_coef:
+    default: 0.4
+    type: float
+    range: [0.1, 1.0]
+  cb_severity_coef:
+    default: 0.3
+    type: float
+    range: [0.1, 1.0]
+  difficulty_bonus:
+    default: 0.3
+    type: float
+    range: [0.0, 1.0]
+
+backend:
+  type: cloudml                         # cloudml / slurm / local
+  cml_path: /root/.cloudml-cli/bin/cml  # path to cml CLI
+  queue_id: "424"                       # CloudML queue ID
+  train_template: autoresearch/parallel/train_template.sh
+  yaml_template: autoresearch/parallel/cloudml_template.yaml
+  gen_dir: autoresearch/parallel/generated
+
+search:
+  strategy: llm            # perturbation / llm / both
+  experiments_per_round: 5
+  perturb_pct: 0.3         # ±30% perturbation (used by perturbation strategy)
+  max_rounds: 20
+
+llm:
+  model: claude-sonnet-4-20250514
+  # api_key: set via ANTHROPIC_API_KEY env var
+
+log_parser:
+  type: verl               # verl / custom
+
+poll_interval: 180         # seconds between status checks
+
+initial_experiments:
+  include_baseline: true
+  sweeps:
+    actor_lr: [1.0e-5, 3.0e-5, 7.0e-5, 1.0e-4]
+    ppo_epochs: [2, 3, 6]
+    entropy_coef: [0.005, 0.02, 0.05]
+    bc_severity_coef: [0.2, 0.6]
+    cb_severity_coef: [0.1, 0.5]
